@@ -1,11 +1,11 @@
 ---
 name: full-stop
-description: Use when Theo explicitly asks for "full stop"
+description: Use when Dhruv explicitly asks for "full stop"
 ---
 
 # Full Stop
 
-Theo is not watching. Own the work until the PR is ready for him to merge.
+Dhruv is not watching. Own the work until the PR is ready for Dhruv to merge.
 Keep fixing, verifying, and reviewing. Never merge it.
 
 ## Authority and boundary
@@ -21,7 +21,7 @@ you hand off.
 
 ## Steps
 
-1. **Finish the change.** Complete the goal from Theo's request with the
+1. **Finish the change.** Complete the goal from Dhruv's request with the
    smallest change that works. If you are on the default branch, create a
    branch first.
 2. **Prove it.** Get proof for every change you made. See "Proof".
@@ -32,7 +32,7 @@ you hand off.
    findings, prove each fix, and push it.
 5. **Babysit the PR** with the `babysit-pr` skill. Handle CI failures, bot
    findings, and teammates' reviews. Prove each fix before you push it.
-6. **Hand off** to Theo. See "Final check and handoff".
+6. **Hand off** to Dhruv. See "Final check and handoff".
 
 Stay active from step 1 to step 6. If you end your turn while checks or bots
 are pending, the work stops, because nobody will prompt you again. Wait with
@@ -46,7 +46,7 @@ the checks the repo's CI runs, and run the app for UI and runtime changes.
 Green mocked tests do not prove that the user experience works. Attach
 screenshots with the `file-upload` skill when they help.
 
-## Asking Theo
+## Asking Dhruv
 
 A question in a normal message goes unseen. Use the harness's question tool
 (`AskUserQuestion` in Claude Code, `request_user_input_async` in Codex) and
@@ -59,12 +59,12 @@ Decide everything else yourself with sensible defaults, and list those
 decisions in the report. If no question tool is available, or the tool
 returns no answer, take the safe path: stop with the PR open and unmerged,
 call `unwatch_pull_request`, and start your final message with the
-question. Never treat silence as permission to merge, and never ask Theo
+question. Never treat silence as permission to merge, and never ask Dhruv
 to merge something that fails the final check.
 
 ## Final check and handoff
 
-Check the live PR on GitHub, not your local state. The PR is ready for Theo
+Check the live PR on GitHub, not your local state. The PR is ready for Dhruv
 only when all of these are true on the latest pushed commit. If any of them
 fails, go back to the steps: fix it, prove the fix, push, and review again.
 Do not hand off a PR that you know still needs work from you.

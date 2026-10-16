@@ -26,7 +26,7 @@ makes this one obsolete, stop monitoring, report it to the user, and ask before
 closing the PR unless closure was explicitly authorized.
 
 If a review bot leaves feedback you believe is not worth addressing, reply and
-resolve the comment. Format every comment left on Theo's behalf with the
+resolve the comment. Format every comment left on Dhruv's behalf with the
 `leaving-pr-comments` skill.
 
 Screenshots and videos help as well. Use the `file-upload` skill when needed.

@@ -24,8 +24,10 @@ If the work will be squashed, preserve human author/co-author credit in the
 merge commit too, using verified identities rather than guessed emails. Model
 attribution is not a substitute for contributor credit.
 
-Use `modernize` to update the continuation against its intended base and
-current architecture. Rework what is necessary to finish the same goal, not
+Rebase the continuation onto the latest intended base. Check whether
+anything merged since the original PR already covers the same goal. If it
+does, stop and report; close the PR only when authorized. Otherwise update
+the continuation to the current architecture. Rework what is necessary to finish the same goal, not
 unrelated features. Simplify the implementation without dropping intended
 behavior or surfaces. Recheck the source PR too: it may have improved while
 you were working.

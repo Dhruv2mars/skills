@@ -13,7 +13,7 @@ its current state to a merged PR.
 If the user did not explicitly request "full send" in some clear way, do not
 assume full autonomy. If they did, everything below applies.
 
-Theo grants you permission to:
+Dhruv grants you permission to:
 
 - Merge the PR once the merge gate passes.
 - Force-push the PR's own branch with `--force-with-lease` after a rebase.
@@ -31,7 +31,7 @@ Theo grants you permission to:
    failures. Get proof for each fix before you push it.
 5. **Merge** when the merge gate passes.
 6. **Report** in your final message: the PR link, the merge commit, your proof,
-   and each decision you made for Theo.
+   and each decision you made for Dhruv.
 
 Stay active from step 1 to step 6. If you end your turn while checks or bots are
 pending, the work stops, because nobody will prompt you again. Wait with the
@@ -54,7 +54,7 @@ reproduction, a screenshot. Use the most direct proof the change allows:
   `file-upload` skill when they help.
 
 When you cannot find a way to prove a change, you do not have full confidence.
-Ask Theo.
+Ask Dhruv.
 
 ## Merge gate
 
@@ -74,10 +74,10 @@ PR as merged. Merge through branch protection as configured. Never use `--admin`
 or other bypasses. You can ignore automated reviews that request "needs human
 review" if you have high confidence in your changes.
 
-## Asking Theo
+## Asking Dhruv
 
 A question in a normal message goes unseen, and the thread looks done. To ask
-Theo something, use the harness's question tool so the thread shows that it is
+Dhruv something, use the harness's question tool so the thread shows that it is
 waiting: `AskUserQuestion` in Claude Code, `request_user_input_async` or
 `request_user_input` in Codex.
 Put all the context in the question: the PR link,

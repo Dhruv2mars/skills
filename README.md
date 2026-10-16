@@ -20,22 +20,17 @@ Agent skills I use with Claude Code and Codex, mostly inside T3 Code.
 
 ## Install
 
-Each skill is a folder with a `SKILL.md`. Copy or symlink the folders into `~/.agents/skills/` for Codex and other agents, or into `~/.claude/skills/` for Claude Code.
-
 ```sh
-git clone https://github.com/dhruv2mars/skills ~/dev/github/skills
-mkdir -p ~/.agents/skills ~/.claude/skills
-for d in ~/dev/github/skills/*/; do
-  ln -s "${d%/}" ~/.agents/skills/
-  ln -s "${d%/}" ~/.claude/skills/
-done
+git clone https://github.com/Dhruv2mars/skills ~/dev/github/skills
+ln -s ~/dev/github/skills/file-pr ~/.claude/skills/   # Claude Code
+ln -s ~/dev/github/skills/file-pr ~/.agents/skills/   # Codex
 ```
 
-To install one skill, link only its folder, for example `ln -s ~/dev/github/skills/file-pr ~/.claude/skills/`.
+Repeat the `ln -s` lines for each skill you want. A `git pull` updates every linked skill.
 
 ## T3 Code tools
 
-Some skills call T3 Code tools when they are available. `babysit-pr`, `full-send`, and `full-stop` use `watch_pull_request` to wait for PR changes, and `sol-loop` uses `delegate_task` to start the reviewer. Outside T3 Code they fall back to polling the PR or to a native subagent.
+`babysit-pr`, `full-send`, and `full-stop` use T3 Code's `watch_pull_request` to wait for PR changes. Without T3 Code they poll the PR. `sol-loop` starts the reviewer with T3 Code's `delegate_task`, and uses the Codex CLI when T3 Code is not available.
 
 ## Credit
 
@@ -43,3 +38,12 @@ Some skills call T3 Code tools when they are available. `babysit-pr`, `full-send
 
 - `full-stop` and `leaving-pr-comments` were only partly visible on stream, so parts of them are my reconstruction.
 - `babysit-pr` and `file-pr` were rebuilt from an older version he showed, then updated to match his current workflow.
+
+`thermo-nuclear-review` and `thermo-nuclear-code-quality-review` come from Cursor's [cursor/plugins](https://github.com/cursor/plugins/tree/main/thermos/skills). The only change is `disable-model-invocation: false`, so agents can start them without being asked. To pull Cursor's latest version:
+
+```sh
+for s in thermo-nuclear-review thermo-nuclear-code-quality-review; do
+  gh api repos/cursor/plugins/contents/thermos/skills/$s/SKILL.md -q .content | base64 -d |
+    sed 's/^disable-model-invocation: true/disable-model-invocation: false/' > $s/SKILL.md
+done
+```

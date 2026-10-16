@@ -40,17 +40,24 @@ missing or pre-failing checks in the brief.
 
 ## 2. Start Sol
 
-In T3, call `orchestrator_capabilities`. Pick the latest Sol unless Theo
+In T3, call `orchestrator_capabilities`. Pick the latest Sol unless Dhruv
 named a version. Do not hardcode an ID. Record provider, model, and effort
 only if exposed. Use `delegate_task` every round (`role: "review"`,
 `mode: "async"`). Save `taskId`. New `clientRequestId` per round.
 `childThreadId` is storage, not the next target. Do not use
 `t3_thread_send`, `create_threads`, or `t3_thread_launch` for review.
 
-If T3 tools are not listed, try one direct capability call. Outside T3, use
-a native Sol subagent and keep its ID. Use Claude's `sol` agent only if
-`~/.claude/agents/sol.md` fits the requested model. If no route runs Sol,
-report the blocker. Do not substitute a model.
+If T3 tools are not listed, try one direct capability call. In Claude Code,
+T3 tools are deferred: load them with ToolSearch
+(`select:mcp__t3-code__orchestrator_capabilities,mcp__t3-code__delegate_task`)
+first.
+
+If T3 does not work, use the Codex CLI. Round 1:
+`codex exec -m <sol-model> -s read-only -C <repo> --json "<brief>"`. Save
+the `thread_id` from the first JSON event. Later rounds:
+`codex exec resume <thread_id> -c sandbox_mode="read-only" "<brief>"`.
+Inside Codex itself, use a native Sol subagent and keep its ID. If no route
+runs Sol, report the blocker. Do not substitute a model.
 
 Do not edit scoped files while review runs. Wait for the notice. Do not
 poll or start a second reviewer. Timeout, error, or no reply is not
