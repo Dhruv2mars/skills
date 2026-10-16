@@ -1,0 +1,4 @@
+interface:
+  display_name: "Postplan"
+  short_description: "Publish HTML as a shareable public link"
+  default_prompt: "Use $postplan to publish this plan as a shareable link."
