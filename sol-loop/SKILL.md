@@ -47,17 +47,18 @@ only if exposed. Use `delegate_task` every round (`role: "review"`,
 `childThreadId` is storage, not the next target. Do not use
 `t3_thread_send`, `create_threads`, or `t3_thread_launch` for review.
 
-If T3 tools are not listed, try one direct capability call. In Claude Code,
-T3 tools are deferred: load them with ToolSearch
+Always use T3 when it is available. If T3 tools are not listed, try one
+direct capability call. In Claude Code, T3 tools are deferred: load them with
+ToolSearch
 (`select:mcp__t3-code__orchestrator_capabilities,mcp__t3-code__delegate_task`)
 first.
 
-If T3 does not work, use the Codex CLI. Round 1:
+Fall back only when T3 is unavailable or its calls fail. Inside Codex, use a
+native Sol subagent and keep its ID. Elsewhere, use the Codex CLI. Round 1:
 `codex exec -m <sol-model> -s read-only -C <repo> --json "<brief>"`. Save
 the `thread_id` from the first JSON event. Later rounds:
-`codex exec resume <thread_id> -c sandbox_mode="read-only" "<brief>"`.
-Inside Codex itself, use a native Sol subagent and keep its ID. If no route
-runs Sol, report the blocker. Do not substitute a model.
+`codex exec resume <thread_id> -c sandbox_mode="read-only" "<brief>"`. If no
+route runs Sol, report the blocker. Do not substitute a model.
 
 Do not edit scoped files while review runs. Wait for the notice. Do not
 poll or start a second reviewer. Timeout, error, or no reply is not
