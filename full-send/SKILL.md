@@ -89,6 +89,8 @@ reviewer then.
 When you hand any of this work to another agent or thread, start its brief with
 "Full send. Use the full-send skill." word for word, then give the goal, scope,
 and context. Do not restate, narrow, or extend this skill's rules in the brief.
+Sol review briefs from `sol-loop` are the exception: they stay review-only and
+use `sol-loop`'s own brief.
 
 ## Asking Dhruv
 
