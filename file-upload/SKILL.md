@@ -34,8 +34,9 @@ to GitHub when it posts, so there is no script and no other host. Needs gh
   ```
 
   Then `screencapture -x -o -l<id> after.png` for a still. For a video, start
-  `screencapture -x -v -l<id> demo.mov &`, do the steps with computer use, and
-  stop it with `kill -INT $!`.
+  `screencapture -x -o -v -l<id> demo.mov &`, do the steps with computer use,
+  and stop it with `kill -INT` on that process. Don't add `-V`: a recording
+  with a time limit ignores the stop and runs to the end.
 - Only the app on screen: no other tabs, no secrets, tokens, `.env` values or
   private data.
 
@@ -65,12 +66,9 @@ gh pr create --body-file body.md --attach ./before.png --attach ./after.png --at
   whole body, so to add media later, start `body.md` from
   `gh pr view --json body -q .body` and add to it. `--attach` also works on
   `gh pr comment` and `gh issue create/edit/comment`.
-- Limits: images up to 10 MB, videos up to 100 MB. Convert the `.mov`, and cut
-  off the window shadow, with
-  `ffmpeg -i demo.mov -vf "crop=<w>:<h>,scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 18 -pix_fmt yuv420p demo.mp4`,
-  where `<w>` and `<h>` are the window size in pixels: the size above, doubled
-  on a retina display. Raise `-crf` only if the file is too big, because higher
-  values blur text.
+- Limits: images up to 10 MB, videos up to 100 MB. Convert the `.mov` with
+  `ffmpeg -i demo.mov -vf "scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 18 -pix_fmt yuv420p demo.mp4`.
+  Raise `-crf` only if the file is too big, because higher values blur text.
 - If one upload fails, gh still posts the ones that worked and exits non-zero.
   Uploads cannot be deleted, so retry only the failed file.
 - Without write access, for example a PR to someone else's repo, gh refuses.
