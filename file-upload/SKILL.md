@@ -7,29 +7,37 @@ description: Add before/after screenshots and a screen recording to a GitHub PR 
 
 Show the change instead of describing it: a before/after pair of screenshots,
 plus a short recording when something moves. `gh --attach` uploads the files
-to GitHub when it posts, so there is no other host. Needs gh 2.99+, write
-access to the repo, and Helium, bun and ffmpeg to capture.
+to GitHub when it posts, so there is no script and no other host. Needs gh
+2.99+ and write access to the repo.
 
 ## Capture
 
 - Capture "before" before you change the code. If you already changed it, run
   the base branch from a separate `git worktree`. Never switch branches in the
   working checkout to get it.
-- Capture before and after at the same viewport size and state, not
-  full-page, so the pair lines up in a table.
+- Capture before and after in the same window at the same size and state, so
+  the pair lines up in a table.
 - Record a video only when the change moves or responds to input. Skip it for
   a static change.
-- Capture with `capture.ts`, next to this file. It runs headless Helium at 2x
-  pixel density, so text stays sharp:
-  `bun capture.ts shot <url> after.png` for a screenshot, and
-  `bun capture.ts scroll <url> demo.mp4` for a scrolling recording. Add
-  `--size 1000x1100` to change the viewport, and `--js "<expr>"` to put the page
-  in the state to show. It starts signed out, so use a local dev server or a
-  public page.
-- Do not use T3 preview snapshots or recordings for PR media. They capture at
-  the display's pixel density, which is 1x on a non-retina monitor or a hidden
-  panel, so text comes out soft. Use them only to explore. Never use Chrome.
-- Nothing secret on screen: tokens, `.env` values, private data.
+- Use computer use to drive whatever changed: a web page in its own Helium
+  window, a desktop app, or a CLI in a terminal. Never Chrome.
+- Save the media with macOS `screencapture` on that one window. It captures at
+  the screen's real resolution, even when other windows cover it. Find the
+  window's id and size:
+
+  ```bash
+  swift -e 'import CoreGraphics
+  for w in CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID) as! [[String: Any]] where w["kCGWindowLayer"] as! Int == 0 {
+    let b = w["kCGWindowBounds"] as! [String: Any]
+    print(w["kCGWindowNumber"]!, w["kCGWindowOwnerName"]!, b["Width"]!, b["Height"]!, w["kCGWindowName"] ?? "")
+  }'
+  ```
+
+  Then `screencapture -x -o -l<id> after.png` for a still. For a video, start
+  `screencapture -x -v -l<id> demo.mov &`, do the steps with computer use, and
+  stop it with `kill -INT $!`.
+- Only the app on screen: no other tabs, no secrets, tokens, `.env` values or
+  private data.
 
 ## Write and post
 
@@ -57,9 +65,12 @@ gh pr create --body-file body.md --attach ./before.png --attach ./after.png --at
   whole body, so to add media later, start `body.md` from
   `gh pr view --json body -q .body` and add to it. `--attach` also works on
   `gh pr comment` and `gh issue create/edit/comment`.
-- Limits: images up to 10 MB, videos up to 100 MB. Convert a `.mov` with
-  `ffmpeg -i in.mov -vf "scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 18 -pix_fmt yuv420p demo.mp4`.
-  Raise `-crf` only if the file is too big, because higher values blur text.
+- Limits: images up to 10 MB, videos up to 100 MB. Convert the `.mov`, and cut
+  off the window shadow, with
+  `ffmpeg -i demo.mov -vf "crop=<w>:<h>,scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 18 -pix_fmt yuv420p demo.mp4`,
+  where `<w>` and `<h>` are the window size in pixels: the size above, doubled
+  on a retina display. Raise `-crf` only if the file is too big, because higher
+  values blur text.
 - If one upload fails, gh still posts the ones that worked and exits non-zero.
   Uploads cannot be deleted, so retry only the failed file.
 - Without write access, for example a PR to someone else's repo, gh refuses.
@@ -70,4 +81,4 @@ gh pr create --body-file body.md --attach ./before.png --attach ./after.png --at
 
 Run `gh pr view --json body -q .body` and confirm no `./` paths are left and
 the video URL sits alone on its own line. Then open the PR and confirm the
-images show and the video plays.
+images show with sharp text and the video plays.
