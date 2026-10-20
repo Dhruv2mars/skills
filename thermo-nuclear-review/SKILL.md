@@ -1,19 +1,30 @@
 ---
 name: thermo-nuclear-review
-description: Comprehensive security and correctness audit of a branch's changes. Use for thermo nuclear, thermonuclear, or deep review requests, or branch/PR diff audits focused on bugs, breaking changes, security issues, devex regressions, and feature-gate leaks.
-disable-model-invocation: false
+description: Deep security and correctness audit of a change. Sol uses it in sol-loop reviews. Use only when a review brief names it, or Dhruv asks for a thermo-nuclear review by name.
 ---
 
 # Thermo Nuclear Review
 
 Use this skill for a comprehensive security and correctness audit of a checked-out branch.
 
+## How it's used
+
+You are usually Sol, reviewing a change for the `sol-loop` skill. The review
+brief you were given wins over this skill: follow its scope, severity labels,
+reply format, and length. Use this skill for how deep to look and what to look
+for. Review only: never edit, commit, push, or comment on the PR.
+
+Map your findings to the brief's labels: a broken intended case or a security
+hole is a `blocker`, a real bug callers will hit is a `should`, and anything
+else is a `nit`. In later rounds, look only at what the brief says changed.
+
 ## Prompt
 
 You are a security expert performing a comprehensive review of a checked out branch. Audit this branch and its changes extremely thoroughly for bugs, changes that break existing features/functionality, and security vulnerabilities. Be EXTREMELY thorough, rigorous, careful, ambitious, and attentive. NOTHING can slip through.
 
 # Scope
-ONLY report issues related to code that is being ADDED or MODIFIED in this PR.
+ONLY report issues related to code that is being ADDED or MODIFIED in this PR,
+unless the brief explicitly asks for a whole-repo audit.
 Focus on changes in the diff.
 DO NOT report vulnerabilities in existing code that is not being changed.
 
@@ -40,7 +51,7 @@ If you report issues as High priority when they are not in fact high priority / 
 NEVER misreport the priority / importance of issues. Be extremely thorough in tracing issues end-to-end to gain complete, and total confidence before reporting.
 
 # Final Response
-IF you have medium-to-high priority / risk findings, and there is a PR for this branch, then check the PR/MR discussion using gh/glab cli to see if there are comments from BugBot or others present.
+IF you have medium-to-high priority / risk findings, and there is a PR for this branch, then read the PR/MR discussion using gh/glab cli to see if there are comments from BugBot or others present. Read only; never post.
 If so, take their findings into account. If they found issues you missed, evaluate them to determine if they are valid and include them in your report. If they found some of the same issues you did, see if there is anything from their findings that are worth incorporating into your response.
 Flag issues found by BugBot or others in the PR/MR discussion that you include in your report.
 

@@ -1,182 +1,193 @@
 ---
 name: npm-release
-description: Release npm packages that also ship binaries through GitHub Releases. Use when Codex needs to set up or repair `.github/workflows/release.yml`, configure npm trusted publishing for GitHub Actions, do a first manual npm publish, tag and ship a new version, or verify that npm and GitHub release distribution both work end to end.
+description: Set up, repair, or ship npm package releases from GitHub Actions with trusted publishing (OIDC, no npm token). Use when Dhruv asks to publish or release an npm package, cut a new version, set up or fix a release workflow, do a first npm publish, or check that a release reached npm and GitHub.
 ---
 
-# Npm Release
+# npm release
 
-## Preferred Pattern
+Dhruv's packages release from a merge to the default branch, not from a tag
+push. `package.json` holds the version. When that version is not released yet,
+CI publishes it to npm with trusted publishing, then creates the `vX.Y.Z` tag
+and a GitHub release from `CHANGELOG.md`. Tag, `package.json`, and npm version
+always match.
 
-Prefer this order:
+## Ship a new version
 
-1. Make the package publishable locally.
-2. Do the first npm publish manually if the package does not exist yet.
-3. Configure npm trusted publishing for `release.yml`.
-4. Verify a real tagged release publishes to npm without `NPM_TOKEN`.
+1. Pick the version. See "Versioning".
+2. In one PR: bump `version` in `package.json` and add a `## [X.Y.Z]` section
+   to `CHANGELOG.md` with the user-facing changes. Run the repo's checks and
+   `npm pack --dry-run`, and confirm the file list is what should ship.
+3. Merge it. The release workflow does the rest.
+4. Verify. See "Verify".
 
-Treat long-lived npm tokens as fallback or migration-only. The preferred steady state is GitHub Actions OIDC trusted publishing.
+Never publish from your machine once CI publishing works, and never add an
+`NPM_TOKEN`.
 
-## Repo Audit
+## Release workflow
 
-Start by locating:
-
-- Root `package.json`
-- Published package `package.json`
-- `.github/workflows/release.yml`
-- Any release tag script such as `scripts/release-tag.mjs`
-
-Confirm the published package has:
-
-- Correct scoped `name`
-- `publishConfig.access` set to `public`
-- `repository.url` matching the exact GitHub repo
-- `repository.directory` pointing at the published package folder
-- `files` limited to what should ship
-- `bin` entry present if this is a CLI
-
-Load [patterns.md](./references/patterns.md) for the generic release pattern and migration notes.
-
-## Release Workflow Rules
-
-The release workflow should usually have these jobs:
-
-1. `validate`
-2. `create_release`
-3. `build_upload`
-4. `publish_npm`
-
-For more complex repos, add `resolve_tag` first so manual reruns can republish an existing tag.
-
-Keep these rules:
-
-- Trigger on `push.tags: v*`
-- Validate the tag matches the package version
-- Create the GitHub release idempotently
-- Build binaries in a matrix and upload checksums
-- Publish npm only after build upload succeeds
-- Give `publish_npm` `id-token: write`
-- Use `npm publish --provenance --access public` for trusted publishing
-
-If the repo has extra release artifacts that can fail independently, such as signed Android builds, gate them behind `workflow_dispatch` input instead of blocking the default npm path.
-
-## First Publish
-
-If `npm view <package>` returns 404, the package does not exist yet. Trusted publishing alone is not enough. Do this first:
-
-1. Log in with `npm login`.
-2. If npm prints a browser URL, open it in Brave:
-   `open -a "Brave Browser" "<url>"`
-3. Wait for browser approval to complete.
-4. Publish from the package directory:
-   `npm publish --access public`
-
-If npm asks for browser approval again during publish, open that URL in Brave and wait for the terminal to finish.
-
-This is the fastest first-publish path when the user already owns the npm scope.
-
-## Trusted Publisher Setup
-
-After the package exists, configure trust for GitHub Actions.
-
-Use npm 11.10 or newer. If the local npm does not support `npm trust`, use:
-
-```bash
-npx npm@11.11.1 trust github <package-name> --file release.yml --repo <owner/repo> -y
-```
-
-Verify with:
-
-```bash
-npx npm@11.11.1 trust list <package-name> --json
-```
-
-The trusted publisher must match exactly:
-
-- GitHub owner or org
-- Repository name
-- Workflow filename only, for example `release.yml`
-
-Do not assume npm trust is configured just because the workflow has `id-token: write`. Verify it explicitly.
-
-## Publish Job Template
-
-Use this shape in `publish_npm`:
+Model new and repaired workflows on this one (from `Dhruv2mars/htmlartifact`).
+Replace `<pkg>` and the check commands. Use bun for install and scripts, and
+`npm publish` to publish: `bun publish` cannot do trusted publishing.
 
 ```yaml
+name: Release
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
-  id-token: write
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest # trusted publishing needs GitHub-hosted runners
+    timeout-minutes: 20
+    permissions:
+      contents: write # create the tag and release
+      id-token: write # npm trusted publishing
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: plan
+        name: Decide what to release
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
+            echo "action=none" >> "$GITHUB_OUTPUT"
+          elif npm view "<pkg>@$version" version >/dev/null 2>&1; then
+            echo "action=tag" >> "$GITHUB_OUTPUT"
+          elif npm view <pkg> name >/dev/null 2>&1; then
+            echo "action=publish" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::<pkg> is not on npm yet. The first publish is manual."
+            echo "action=none" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.plan.outputs.action != 'none'
+        name: Extract release notes
+        run: |
+          version=${{ steps.plan.outputs.version }}
+          awk -v v="$version" '$0 ~ "^## \\[" v "\\]" {on=1; next} on && (/^## / || /^\[[^]]*\]: /) {exit} on' CHANGELOG.md > notes.md
+          test -s notes.md || { echo "::error::CHANGELOG.md has no section for $version"; exit 1; }
+      - if: steps.plan.outputs.action == 'publish'
+        uses: oven-sh/setup-bun@v2
+      - if: steps.plan.outputs.action == 'publish'
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - if: steps.plan.outputs.action == 'publish'
+        name: Check, test and publish
+        run: |
+          npm install -g npm@latest # trusted publishing needs npm >= 11.5.1
+          bun install --frozen-lockfile
+          bun run test
+          npm publish --access public
+      - if: steps.plan.outputs.action != 'none'
+        name: Tag and create the GitHub release
+        run: |
+          version=${{ steps.plan.outputs.version }}
+          # Tag the commit npm published from (gitHead), else this commit.
+          target=$(npm view "<pkg>@$version" gitHead 2>/dev/null || true)
+          gh release create "v$version" --target "${target:-$GITHUB_SHA}" --title "v$version" --notes-file notes.md
 ```
 
-Then:
+Why it is shaped this way:
+
+- The plan step makes reruns safe. A version that is already tagged does
+  nothing. One that is on npm but untagged only gets its tag and release.
+- It checks the changelog before publishing, and publishes before tagging,
+  so a failed run leaves no orphan tag and no untagged release.
+- Trusted publishing adds provenance on its own. Don't pass `--provenance`.
+  It needs a public repo and package.
+- If the publish fails with `ENEEDAUTH` while `registry-url` is set, add
+  `unset NODE_AUTH_TOKEN` before `npm publish`.
+
+For a CLI that ships compiled binaries, add the build to this flow. See
+[binaries.md](./references/binaries.md).
+
+## Package checks
+
+The published `package.json` needs:
+
+- The right `name` (scoped `@dhruv2mars/<name>` or unscoped, as the repo
+  already uses).
+- `repository.url` matching the GitHub repo exactly. Trusted publishing
+  checks it. Add `repository.directory` when the package is not at the root.
+- `files` limited to what should ship, and `bin` for a CLI.
+- `publishConfig.access: public` for scoped packages.
+
+## First publish
+
+Trusted publishing only works for a package that already exists on npm. If
+`npm view <pkg>` returns 404:
+
+1. Make the package publishable, and merge the release workflow so it is on
+   the default branch.
+2. Publish once by hand from the package directory: `npm login --browser=false`,
+   then open the printed URL with `open -a Helium "<url>"`. Never use another
+   browser. Dhruv approves the login with 2FA, so ask him with the harness's
+   question tool and wait. Then run `npm publish --access public`.
+3. Add the trusted publisher (next section) right away.
+4. Run the workflow manually (`gh workflow run release.yml`). It sees the
+   version on npm and only creates the tag and release.
+
+## Trusted publisher
+
+Set it up on npmjs.com (package → Settings → Trusted publishing → GitHub
+Actions), or with npm 11.15 or newer:
 
 ```bash
-set -euo pipefail
-local_v="$(node -p "require('./packages/npm/package.json').version")"
-remote_v="$(npm view @scope/pkg version 2>/dev/null || true)"
-if [ -n "${remote_v:-}" ] && [ "${remote_v}" = "${local_v}" ]; then
-  echo "skip: already on npm (${remote_v})"
-  exit 0
-fi
-rc="${RUNNER_TEMP:-/tmp}/npmrc"
-echo "registry=https://registry.npmjs.org/" > "$rc"
-export NPM_CONFIG_USERCONFIG="$rc"
-unset NODE_AUTH_TOKEN || true
-cd packages/npm && npm publish --provenance --access public
+npm trust github <pkg> --file release.yml --repo Dhruv2mars/<repo> --allow-publish -y
+npm trust list <pkg> --json
 ```
 
-If the repo still needs a temporary token fallback, keep it explicit and prefer the trusted-publisher branch first.
+- Every field must match exactly, including the `.yml` in the workflow file
+  name. npm does not check them when you save. A mismatch shows up at publish
+  time as `ENEEDAUTH`.
+- New configurations can only stage releases by default. Allow direct publish
+  (`--allow-publish`, or the "Allow npm publish" box) so CI releases go out
+  without a manual approval. Use staging instead only if Dhruv asks for it.
+- A new configuration expires 48 hours after creation unless a publish
+  succeeds through it. Create it right before the release that will use it.
+- `npm trust` needs 2FA on the account, so Dhruv approves it.
+- Configurations can't be edited. Delete and recreate one to change it.
 
-## Tagging
+## Migrating an old repo
 
-Prefer a repo script like `scripts/release-tag.mjs` over ad hoc shell when multiple files must agree on version.
+Older repos release on a `v*` tag push, often with a `scripts/release-tag.mjs`
+script and an `NPM_TOKEN` fallback. When you touch one of them:
 
-At minimum, the tag step should protect against version drift:
+1. Replace the workflow with the one above. Delete the tag script and any
+   `NPM_TOKEN` steps. Keep a binary build if the package ships binaries.
+2. Point the trusted publisher at the workflow file you kept. A renamed file
+   needs a new configuration.
+3. Release a new patch version through the new flow to prove it works.
+4. Delete the `NPM_TOKEN` secret from the repo once that release is on npm.
 
-- Single-package repos: package version must match the tag
-- Mixed app + npm repos: app version, package version, and npm package version must all match
+## Versioning
 
-Use a `--print` mode on the tag script when possible so you can verify the expected tag before pushing.
+Start new packages at `0.0.1`. Unless Dhruv asks otherwise:
 
-## Versioning Rule
+- `0.0.x` for fixes, polish, small features, packaging, and release-flow
+  changes.
+- `0.x.0` for a clear new phase: a major feature, a broad expansion, or a
+  rewrite.
 
-Start new packages at `v0.0.1`.
+Don't jump versions casually.
 
-Use this rule unless the user explicitly asks for a different release policy:
+## Verify
 
-- Bump `v0.0.x` for fixes, polish, small follow-up features, release-flow repairs, packaging changes, and other incremental work.
-- Bump `v0.x.0` for a clear new phase: major feature addition, broad product expansion, or substantial rewrite/revamp.
+After the merge:
 
-Do not jump versions casually. Keep early package history dense and predictable.
+1. `gh run watch <run-id> --exit-status` on the release run.
+2. `npm view <pkg> version dist-tags.latest --json` shows the new version.
+3. `gh release view vX.Y.Z --json tagName,url,assets` shows the release, with
+   assets if the package ships binaries.
+4. `bunx <pkg>@latest --version`, or another smoke run, works from a clean
+   directory.
 
-## Verification
-
-Verify locally before tagging:
-
-- Package tests for the published package
-- `npm pack --dry-run` on the published package directory
-- Tag script `--print` output if available
-
-Verify live after tagging:
-
-1. Watch the release run:
-   `gh run watch <run-id> --exit-status`
-2. Confirm the npm job succeeded without token auth errors.
-3. Confirm the package version on npm:
-   `npm view <package-name> version dist-tags.latest --json`
-4. Confirm the GitHub release has the expected assets:
-   `gh release view <tag> --json tagName,publishedAt,assets,url`
-
-If the version is already on npm, bump the version before trying to prove trusted publishing. Otherwise the job will skip and you will learn nothing.
-
-## Migration Guidance
-
-When upgrading an older repo:
-
-1. Keep the existing release workflow working.
-2. Publish the package manually once if needed.
-3. Add npm trusted publisher.
-4. Rerun or retag with a new version to prove OIDC publish works.
-5. Remove `NPM_TOKEN` dependence once verification succeeds.
-
-Prefer the trusted-publisher-only end state once it is proven.
+Report the npm version, the release link, and the smoke output.

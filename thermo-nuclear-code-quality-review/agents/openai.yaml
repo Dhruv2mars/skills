@@ -1,0 +1,6 @@
+interface:
+  display_name: "Thermo Nuclear Code Quality"
+  short_description: "Strict maintainability review for Sol reviews"
+  default_prompt: "Use $thermo-nuclear-code-quality-review to review this change for maintainability."
+policy:
+  allow_implicit_invocation: false
