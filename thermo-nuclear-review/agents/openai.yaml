@@ -1,0 +1,6 @@
+interface:
+  display_name: "Thermo Nuclear Review"
+  short_description: "Deep security and correctness audit for Sol reviews"
+  default_prompt: "Use $thermo-nuclear-review to audit this change for bugs, breakage, and security issues."
+policy:
+  allow_implicit_invocation: false

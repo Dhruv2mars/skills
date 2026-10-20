@@ -1,6 +1,6 @@
 ---
 name: sol-loop
-description: Use when the user says "sol loop".
+description: Review a change with GPT-6.1 Sol in a loop and fix what it finds. Use when the user says "sol loop", or when full-send or full-stop calls for it.
 ---
 
 # sol-loop
@@ -70,11 +70,19 @@ Round 1 brief (T3 children get no history):
 Review only. Do not edit, commit, push, comment on PRs, or start subagents.
 Repo: <abs path> Base: <sha> Intent: <intent> Out of scope: <scope> Checks: <results>
 See: git diff <base> [-- <paths>]; git status --short (read untracked).
+Use $thermo-nuclear-review for correctness and security, and
+$thermo-nuclear-code-quality-review for maintainability, on this diff only
+(SKILL.md files under ~/.agents/skills/ if not loaded). This brief's scope,
+labels, and reply format override theirs.
 Read surrounding code. Find bugs, broken callers, mismatch with intent.
 Skip style unless it hides a bug. Hold to the smallest change. Flag code,
 tests, or guards the intent does not need. Other paths, rare cases, small
-perf, extra compat: nits.
-blocker = intended case wrong. should = real bug callers will hit, in intent. nit = rest.
+perf, extra compat: nits. Quality: flag what this diff makes worse (tangled
+branches, a file pushed past 1k lines, a duplicated helper, a needless
+wrapper). A simpler way to write this same change is a should. Restructuring
+code the change does not need is a nit.
+blocker = intended case wrong, or a security hole. should = real bug callers
+will hit, in intent, or a quality regression above. nit = rest.
 Reply:
 VERDICT: APPROVE or CHANGES
 S1 [blocker|should|nit] <file>:<line> <claim>. Fix: <suggestion> (stable ids)
@@ -96,19 +104,24 @@ review grew the diff, cut first. Do not agree just to end the loop.
 
 ## 4. Next round
 
-Start one only if budget remains and a blocker or should is open, behavior code changed, or approval does not cover the current behavior diff. Use a fresh `delegate_task` in T3, or follow up the saved native ID. Send the round 1 brief, the ledger (`fixed:` / `disagree:` / `declined:` + evidence), the same base diff, and the change since last round. Tell Sol: open ids and changed code only. Mark each old id `resolved` or `still open: <reason>`.
+Start one only if budget remains and a blocker or should is open, behavior code changed, or approval does not cover the current behavior diff. If behavior code changes after approval (for example a bot or CI fix), run one round scoped to that change, even past budget. Use a fresh `delegate_task` in T3, or follow up the saved native ID. Send the round 1 brief, the ledger (`fixed:` / `disagree:` / `declined:` + evidence), the same base diff, and the change since last round. Tell Sol: open ids and changed code only. Mark each old id `resolved` or `still open: <reason>`.
 
 ## 5. Stop and ship
 
-Agreed: APPROVE on the current behavior diff, no blocker or should open,
+Agreed: APPROVE, or only nits left, on the current behavior diff, no blocker or should open,
 no concern of your own. Stuck: an item stays disputed after two replies,
 or budget ends. Show both sides in 2-3 lines each. The user decides.
-Budget end is not approval.
+Budget end is not approval. An extra round past budget that does not end in
+agreement is stuck too. When `full-send` or `full-stop` called this skill, ask
+with that skill's "Asking Dhruv" rules, never in plain chat; the same goes for
+"stop and ask" in Scope.
 
-Do not push during the loop. Push after agreement only if the user asked
-to push, ship, or update the PR. If you push to a PR, add above the model
-blurb: `Reviewed with sol-loop: <N> rounds with <model>. Sol verdict: approved` Add
-`on <effort>` only if verified.
+Do not push or rebase during the loop. Push after agreement only if the user asked
+to push, ship, or update the PR, or a calling skill (`full-send`,
+`full-stop`) allows it. When the change has a PR and you agreed, add this line
+to its description above the model blurb, with `gh pr edit` if there is
+nothing to push: `Reviewed with sol-loop: <N> rounds with <model>. Sol verdict: approved`
+Add `on <effort>` only if verified. Update N after any later round.
 
 Report: rounds, model, what Sol changed, diff size before/after, fixed and
 declined findings with reasons, usage if exposed (else say not), pushed or not.

@@ -14,7 +14,7 @@ Prefer this order:
 3. Configure npm trusted publishing for `release.yml`.
 4. Verify a real tagged release publishes to npm without `NPM_TOKEN`.
 
-Treat long-lived npm tokens as fallback or migration-only. The preferred steady state is GitHub Actions OIDC trusted publishing.
+Treat npm tokens as fallback or migration-only: classic tokens no longer exist, and granular publish tokens last at most 90 days. The preferred steady state is GitHub Actions OIDC trusted publishing.
 
 ## Repo Audit
 
@@ -55,6 +55,7 @@ Keep these rules:
 - Build binaries in a matrix and upload checksums
 - Publish npm only after build upload succeeds
 - Give `publish_npm` `id-token: write`
+- Run npm 11.5.1 or newer in `publish_npm` (for example `npm install -g npm@latest`); older npm cannot publish over OIDC
 - Use `npm publish --provenance --access public` for trusted publishing
 
 If the repo has extra release artifacts that can fail independently, such as signed Android builds, gate them behind `workflow_dispatch` input instead of blocking the default npm path.
@@ -63,14 +64,15 @@ If the repo has extra release artifacts that can fail independently, such as sig
 
 If `npm view <package>` returns 404, the package does not exist yet. Trusted publishing alone is not enough. Do this first:
 
-1. Log in with `npm login`.
-2. If npm prints a browser URL, open it in Brave:
-   `open -a "Brave Browser" "<url>"`
+1. Log in with `npm login --browser=false`, so npm prints the URL instead of
+   opening the default browser.
+2. Open that URL in Helium, the only browser to use:
+   `open -a Helium "<url>"`
 3. Wait for browser approval to complete.
 4. Publish from the package directory:
    `npm publish --access public`
 
-If npm asks for browser approval again during publish, open that URL in Brave and wait for the terminal to finish.
+If npm asks for browser approval again during publish, open that URL in Helium and wait for the terminal to finish.
 
 This is the fastest first-publish path when the user already owns the npm scope.
 
@@ -78,17 +80,23 @@ This is the fastest first-publish path when the user already owns the npm scope.
 
 After the package exists, configure trust for GitHub Actions.
 
-Use npm 11.10 or newer. If the local npm does not support `npm trust`, use:
+Use npm 11.15 or newer. If the local npm is older, use:
 
 ```bash
-npx npm@11.11.1 trust github <package-name> --file release.yml --repo <owner/repo> -y
+npx npm@latest trust github <package-name> --file release.yml --repo <owner/repo> --allow-publish -y
 ```
 
 Verify with:
 
 ```bash
-npx npm@11.11.1 trust list <package-name> --json
+npx npm@latest trust list <package-name> --json
 ```
+
+- `--allow-publish` is required. Without it, a new trusted publisher can only
+  stage releases, which wait for a manual approval on npm.
+- A new trusted publisher expires 48 hours after creation unless a publish
+  succeeds through it. Set it up right before the release that verifies it.
+- `npm trust` needs 2FA on the account, so the user approves it.
 
 The trusted publisher must match exactly:
 

@@ -1,12 +1,29 @@
 ---
 name: thermo-nuclear-code-quality-review
-description: Run an extremely strict maintainability review for abstraction quality, giant files, and spaghetti-condition growth. Use for a thermo-nuclear code quality review, thermonuclear review, deep code quality audit, or especially harsh maintainability review.
-disable-model-invocation: false
+description: Strict maintainability review of a change for abstraction quality, giant files, and spaghetti growth. Sol uses it in sol-loop reviews. Use only when a review brief names it, or Dhruv asks for a thermo-nuclear code quality review by name.
 ---
 
 # Thermo-Nuclear Code Quality Review
 
 Use this skill for an unusually strict review focused on implementation quality, maintainability, abstraction quality, and codebase health.
+
+## How it's used
+
+You are usually Sol, reviewing a change for the `sol-loop` skill. The review
+brief you were given wins over this skill: follow its scope, severity labels,
+reply format, and length. Review only: never edit, commit, push, or comment on
+the PR.
+
+`sol-loop` wants the smallest change that works, so aim your ambition at how
+this change is written, not at code it does not need to touch:
+
+- A "code judo" move that makes this diff smaller, simpler, or delete
+  branches it adds is a `should`.
+- The presumptive blockers under "Approval Bar", when this diff causes them,
+  are a `should`.
+- Restructuring code the change does not need is a `nit`. List it as a
+  follow-up.
+- In later rounds, look only at what the brief says changed.
 
 Above all, this skill should push the reviewer to be **ambitious** about code structure. Do not merely identify local cleanup opportunities. Actively search for "code judo" moves: restructurings that preserve behavior while making the implementation dramatically simpler, smaller, more direct, and more elegant.
 
