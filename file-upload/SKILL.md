@@ -7,8 +7,8 @@ description: Add before/after screenshots and a screen recording to a GitHub PR 
 
 Show the change instead of describing it: a before/after pair of screenshots,
 plus a short recording when something moves. `gh --attach` uploads the files
-to GitHub when it posts, so there is no script and no other host. Needs gh
-2.99+ and write access to the repo.
+to GitHub when it posts, so there is no other host. Needs gh 2.99+, write
+access to the repo, and Helium, bun and ffmpeg to capture.
 
 ## Capture
 
@@ -19,7 +19,16 @@ to GitHub when it posts, so there is no script and no other host. Needs gh
   full-page, so the pair lines up in a table.
 - Record a video only when the change moves or responds to input. Skip it for
   a static change.
-- Use T3 preview tools or Helium. Never Chrome.
+- Capture with `capture.ts`, next to this file. It runs headless Helium at 2x
+  pixel density, so text stays sharp:
+  `bun capture.ts shot <url> after.png` for a screenshot, and
+  `bun capture.ts scroll <url> demo.mp4` for a scrolling recording. Add
+  `--size 1000x1100` to change the viewport, and `--js "<expr>"` to put the page
+  in the state to show. It starts signed out, so use a local dev server or a
+  public page.
+- Do not use T3 preview snapshots or recordings for PR media. They capture at
+  the display's pixel density, which is 1x on a non-retina monitor or a hidden
+  panel, so text comes out soft. Use them only to explore. Never use Chrome.
 - Nothing secret on screen: tokens, `.env` values, private data.
 
 ## Write and post
@@ -48,9 +57,9 @@ gh pr create --body-file body.md --attach ./before.png --attach ./after.png --at
   whole body, so to add media later, start `body.md` from
   `gh pr view --json body -q .body` and add to it. `--attach` also works on
   `gh pr comment` and `gh issue create/edit/comment`.
-- Limits: images up to 10 MB, videos up to 100 MB. Convert a `.mov`, or
-  shrink a big video, with
-  `ffmpeg -i in.mov -vf "scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 28 -pix_fmt yuv420p demo.mp4`.
+- Limits: images up to 10 MB, videos up to 100 MB. Convert a `.mov` with
+  `ffmpeg -i in.mov -vf "scale=trunc(iw/2)*2:-2" -c:v libx264 -crf 18 -pix_fmt yuv420p demo.mp4`.
+  Raise `-crf` only if the file is too big, because higher values blur text.
 - If one upload fails, gh still posts the ones that worked and exits non-zero.
   Uploads cannot be deleted, so retry only the failed file.
 - Without write access, for example a PR to someone else's repo, gh refuses.
