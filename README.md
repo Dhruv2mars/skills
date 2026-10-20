@@ -9,7 +9,7 @@ My agent skills for Claude Code and Codex.
 | `sol-loop` | GPT-6.1 Sol reviews the change for up to 3 rounds, and the agent fixes what it finds. |
 | `takeover` | Continues someone else's PR, branch, or agent thread. |
 | `file-pr` | Opens a short PR. |
-| `file-upload` | Uploads screenshots and videos to GitHub and returns a URL to embed. Works in repos you cannot write to. |
+| `file-upload` | Adds before/after screenshots and a screen recording to a PR with `gh --attach`. |
 | `babysit-pr` | Watches a PR through CI and review until it can merge. |
 | `leaving-pr-comments` | Formats the PR comments an agent posts for me. |
 | `thermo-nuclear-review` | Audits a branch for bugs, breaking changes, and security issues. |
