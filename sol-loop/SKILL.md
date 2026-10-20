@@ -116,7 +116,7 @@ agreement is stuck too. When `full-send` or `full-stop` called this skill, ask
 with that skill's "Asking Dhruv" rules, never in plain chat; the same goes for
 "stop and ask" in Scope.
 
-Do not push during the loop. Push after agreement only if the user asked
+Do not push or rebase during the loop. Push after agreement only if the user asked
 to push, ship, or update the PR, or a calling skill (`full-send`,
 `full-stop`) allows it. When the change has a PR and you agreed, add this line
 to its description above the model blurb, with `gh pr edit` if there is

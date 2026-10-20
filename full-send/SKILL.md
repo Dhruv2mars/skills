@@ -70,19 +70,15 @@ prove a change, you do not have full confidence. Ask Dhruv.
 
 ## Review
 
-- **Sol:** run `sol-loop` on the PR. It finds the base from the PR itself.
-  This skill counts as permission to push once Sol agrees.
-- **Review bots:** while the loop runs, collect bot findings and CI results
-  from the `babysit-pr` watcher, but do not push or rebase until Sol agrees.
-  Do not edit code while a Sol round runs. Between rounds, fix real bot
-  findings and CI failures along with Sol's findings, so the next Sol round
-  reviews those fixes too.
-- **After the loop:** push, make sure the PR has the `Reviewed with sol-loop`
-  line, then keep babysitting until the bots and checks settle on the latest
-  commit. If a later fix changes behavior code, run one more Sol round scoped
-  to just that change before you merge, even past the round budget. If
-  that round does not end in agreement, ask Dhruv. CI config, docs, and
-  formatting fixes need no new round.
+Run the `sol-loop` skill on the PR, and keep watching the PR with `babysit-pr`
+while it runs. `sol-loop` owns the review: the rounds, when to push, the
+`Reviewed with sol-loop` line, and when a later change needs another round.
+This skill counts as permission to push once Sol agrees.
+
+While a Sol round runs, collect bot findings and CI results, but do not edit,
+push, or rebase. Between rounds, fix real bot findings and CI failures along
+with Sol's findings, so Sol reviews those fixes too. After the loop, keep
+babysitting until the bots and checks settle on the latest commit.
 
 A repo may have no review bots, or its bots may skip the PR (for example
 "does not receive automatic reviews"). Treat those bots as absent. Sol is the

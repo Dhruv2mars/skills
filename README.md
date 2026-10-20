@@ -15,7 +15,7 @@ My agent skills for Claude Code and Codex.
 | `thermo-nuclear-review` | Sol's checklist for bugs, breaking changes, and security issues during `sol-loop`. |
 | `thermo-nuclear-code-quality-review` | Sol's checklist for maintainability during `sol-loop`. |
 | `postplan` | Publishes an HTML page to Postplan and returns the link. |
-| `npm-release` | Sets up and ships npm releases from GitHub Actions with trusted publishing. |
+| `npm-release` | Releases an npm package that ships binaries through GitHub Releases. |
 
 ## Install
 

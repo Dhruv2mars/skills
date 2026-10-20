@@ -1,4 +1,4 @@
 interface:
   display_name: "NPM Release"
-  short_description: "Release npm packages from GitHub Actions"
-  default_prompt: "Use $npm-release to release this package to npm with trusted publishing."
+  short_description: "Release npm packages with GitHub Actions"
+  default_prompt: "Use $npm-release to ship this package to npm and verify the GitHub release flow."
