@@ -1,0 +1,37 @@
+{
+  "id": "trail-confidence",
+  "display_name": "Confidence Eval",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a confidence evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nThis repository is a collection of agent skills (Markdown SKILL.md instruction files plus small helper scripts) for Claude Code and Codex: full-send, full-stop, sol-loop, takeover, file-pr, file-upload, babysit-pr, leaving-pr-comments, thermo-nuclear review checklists, postplan, npm-release. There is no conventional app or test suite, so \"well-tested\" means the instructions and scripts are unambiguous, internally consistent, and verifiable from the diff.\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **confidence** from 0 to 100 (higher = more confident the changes are correct and will make an agent behave as intended). Weigh:\n- Do skill instructions give an agent one clear, executable path, with no contradictions with other skills (e.g. full-send vs full-stop merge behavior, sol-loop round limits, thermo checklists)?\n- Are shell commands, `gh` flags, file paths, and frontmatter (name, description, triggers) correct and runnable as written, including on macOS/zsh?\n- Do README tables, install/symlink loops, and per-agent availability (Claude Code vs Codex-only skills) still match the skills that exist?\n- For scripts (e.g. release or upload helpers), are error paths, quoting, and idempotency handled, and is there evidence the flow was exercised?\n- Are the stop conditions and approval gates (not merging in full-stop, confirming before outward-facing actions) preserved?\n\nScore bands:\n- 85-100: small, self-consistent edit; commands and references verified in the diff; gates intact.\n- 60-84: likely correct but relies on unverified `gh`/npm/CLI behavior or touches one cross-skill reference.\n- 30-59: ambiguous instructions, unverified commands, or README/skill mismatches likely to mislead an agent.\n- 0-29: contradictory or broken instructions, removed safety gates, or scripts that likely fail or act destructively.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "confidence",
+      "label": "Confidence",
+      "value_type": "percent",
+      "polarity": "higher_is_better"
+    }
+  }
+}

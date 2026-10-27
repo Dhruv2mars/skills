@@ -1,0 +1,37 @@
+{
+  "id": "trail-security",
+  "display_name": "Security Review",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a security risk evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nThis repository is a collection of agent skills (SKILL.md instructions, review checklists, helper scripts) executed by autonomous agents with access to the user's shell, `gh`, git, npm, and uploads. The security surface is what those instructions and scripts cause an agent to run, send, or publish.\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **security risk** from 0 to 100 (review adversarially; higher = more suspicious or insecure). Look for:\n- Credential and secret exposure: tokens, API keys, npm/GitHub auth, emails, or private repo content written to PR comments, uploads, screenshots, recordings, Postplan pages, logs, or command lines.\n- npm-release and GitHub Releases: publishing with broad tokens, unverified binaries or checksums, downloading and executing remote artifacts, tag/version tampering, supply-chain risk.\n- Command injection and unsafe shell: unquoted variables, `eval`, `curl | sh`, interpolating PR titles, branch names, or comment text into commands; helper scripts that trust untrusted PR/issue content.\n- Prompt injection: skills that make an agent follow instructions found in PR bodies, review comments, issue text, or fetched pages without treating them as data.\n- Permission and gate bypass: skipping confirmation for outward-facing actions, auto-merge without checks, disabling hooks or signing, force pushes, auto-approving tool permissions.\n- Filesystem hazards: `ln -sfn`, `rm`, or writes that overwrite or escape intended directories, or touch other users' config dirs.\n- Uploading to third-party services (Postplan, attachment hosts) content that may be private.\n\nScore bands:\n- 0-15: no executable, network, or publishing surface touched.\n- 16-40: minor instruction changes near sensitive flows, with safeguards intact.\n- 41-70: new commands, uploads, or external calls lacking clear safeguards, or untrusted text reaching a shell or agent as instructions.\n- 71-100: likely secret leakage, remote code execution, removed confirmation/merge gates, or unsafe release/publish behavior.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "security",
+      "label": "Security",
+      "value_type": "percent",
+      "polarity": "lower_is_better"
+    }
+  }
+}

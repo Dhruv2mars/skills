@@ -1,0 +1,37 @@
+{
+  "id": "trail-risk",
+  "display_name": "Risk Eval",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a risk evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nThis repository is a collection of agent skills (SKILL.md files, review checklists, helper scripts) that autonomous agents follow to file PRs, post comments, run review loops, merge, publish pages, and release npm packages. Risk here is what an agent could do wrongly, irreversibly, or outwardly when following the changed instructions, not runtime app failure.\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **risk** from 0 to 100 (higher = more potential damage if something is wrong). Weigh:\n- Merge and approval gates: changes to full-send/full-stop/babysit-pr that could merge without CI green, review, or the user's say-so, or make full-stop merge.\n- Outward-facing, hard-to-reverse actions: pushing, force pushing, posting PR comments, uploading media, publishing to Postplan, npm publish, creating GitHub Releases or tags.\n- Destructive or broad shell commands, and symlink/install steps that can overwrite real directories in ~/.agents/skills or Claude config dirs.\n- Sensitive data exposure in screenshots, recordings, pages, comments, or logs.\n- Loop control in sol-loop and takeover: unbounded rounds, skipped review, or clobbering another person's PR/branch.\n- Blast radius across skills: a shared instruction or checklist (thermo-nuclear-*, leaving-pr-comments) that many skills depend on.\n\nScore bands:\n- 0-15: typo, wording, or README-only edits with no behavior change.\n- 16-40: clarifying or additive instruction changes within one skill, no gate or outward action touched.\n- 41-70: changes to a skill's workflow, commands, or review checklists that alter what agents do, or cross-skill references.\n- 71-100: weakens or removes a merge/confirmation gate, alters release/publish flow, adds destructive or credential-touching commands, or changes install steps that overwrite existing files.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "risk",
+      "label": "Risk",
+      "value_type": "percent",
+      "polarity": "lower_is_better"
+    }
+  }
+}

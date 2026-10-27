@@ -1,0 +1,37 @@
+{
+  "id": "trail-drift",
+  "display_name": "Drift Eval",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a drift evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nThis repository is a flat collection of agent skills, one top-level directory per skill (full-send, full-stop, sol-loop, takeover, file-pr, file-upload, babysit-pr, leaving-pr-comments, thermo-nuclear-review, thermo-nuclear-code-quality-review, postplan, npm-release), each centered on a SKILL.md with frontmatter, written in a terse, imperative voice, with a README.md table listing every skill and an install section describing which skills go to Claude Code vs Codex.\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **drift** from 0 to 100 (higher = more deviation from the project's established patterns). Consider:\n- Does a new or changed skill follow the existing layout (top-level dir, SKILL.md, frontmatter name/description) and tone?\n- Is the README table and install/symlink instructions updated consistently, including Codex-only vs Claude Code lists?\n- Do skills reuse existing skills (sol-loop, file-pr, babysit-pr, leaving-pr-comments) rather than duplicating their logic?\n- Does the change introduce unrelated tooling, build systems, dependencies, or app-style code structure foreign to a skills repo?\n- Are conventions like `gh` usage, short PRs, and the full-send/full-stop split respected?\n\nScore bands:\n- 0-20: matches existing skill structure, voice, and README conventions.\n- 21-50: minor deviations (wording, extra section, README row missing a detail).\n- 51-80: new skill or script ignoring layout conventions, duplicating another skill's logic, or leaving README/install lists inconsistent.\n- 81-100: restructures the repo, adds foreign frameworks/tooling, or contradicts established skill workflows.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "drift",
+      "label": "Drift",
+      "value_type": "percent",
+      "polarity": "lower_is_better"
+    }
+  }
+}

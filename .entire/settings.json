@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "absolute_git_hook_path": true,
+  "checkpoints": {
+    "primary": {
+      "type": "git-refs"
+    }
+  }
+}
