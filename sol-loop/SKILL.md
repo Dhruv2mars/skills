@@ -5,6 +5,8 @@ description: Review a change with GPT-6.1 Sol in a loop and fix what it finds. U
 
 # sol-loop
 
+> On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
+
 This is a workflow for making your code changes more correct before (or sometimes after) filing a pull request. tl;dr - use GPT-6.1 Sol to review your code in a loop.
 
 Make the most minimal possible changes to appease the Sol reviewers. Be careful of scope creep and don't be scared to push back.

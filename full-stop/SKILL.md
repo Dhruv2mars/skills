@@ -5,6 +5,8 @@ description: Take work to a verified, reviewed PR that Dhruv can merge, then sto
 
 # Full Stop
 
+> On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
+
 Dhruv is not watching. Own the work until the PR is ready for Dhruv to merge.
 Keep fixing, verifying, and reviewing. Never merge it. Your updates and your
 final message go unread until long after you stop.

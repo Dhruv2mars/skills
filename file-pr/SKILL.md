@@ -5,6 +5,8 @@ description: File a concise pull request. Use when the user asks to file, open, 
 
 # File PR
 
+> On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
+
 Before filing, check whether a PR for this branch already exists. Review the
 diff locally against the default branch to make sure its contents match the
 goal.

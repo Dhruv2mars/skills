@@ -6,6 +6,8 @@ description: Monitor a pull request through review and CI. Use when the user ask
 
 # Babysit PR
 
+> On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
+
 All the repos we work in have various AI review bots. They're helpful, even if
 they are not always right.
 

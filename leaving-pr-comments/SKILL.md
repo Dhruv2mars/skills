@@ -9,6 +9,8 @@ description: Format and post agent-authored GitHub pull request
 
 # Leaving PR Comments
 
+> On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
+
 Prefix every agent-authored comment left on Dhruv's behalf with this GitHub note
 callout:
 
