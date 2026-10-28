@@ -28,18 +28,19 @@ unavailable, report it instead of substituting.
 In T3, call `orchestrator_capabilities` and find each model. A model may be
 offered by only one provider instance (Fable can sit on a second Claude
 profile); use the instance that lists it. Start all three in parallel with
-`delegate_task` (`role: "review"`, `mode: "async"`), a new `clientRequestId`
-each round, and keep every `taskId`. In Claude Code, T3 tools are deferred:
-load them with ToolSearch first.
+`delegate_task` (`role: "review"`, `mode: "async"`), effort high in
+`target.options`, a new `clientRequestId` each round, and keep every `taskId`.
+In Claude Code, T3 tools are deferred: load them with ToolSearch first.
 
-Without T3, use native subagents for the models your harness runs, and the
-Codex CLI for Sol (`codex exec -m gpt-6.1-sol -s read-only -C <repo> --json "<brief>"`).
+Without T3, use native subagents for the models your harness runs, and
+`sol-loop`'s Codex CLI fallback for Sol, with `-c model_reasoning_effort=high`.
 
 Give each delegate the request and relevant context; children get no history.
 For review or feedback, keep them read-only: no edits, commits, pushes, PR
-comments, or subagents. For a code review, send `sol-loop`'s round 1 brief
-and add a line asking for `SCORE: <n>/10`. Wait for the notices; do not poll.
-A timeout, error, or no reply is not approval.
+comments, or subagents. For a code review, scope the change with `sol-loop`
+step 1, then send its round 1 brief and add a line asking for
+`SCORE: <n>/10`. Wait for the notices; do not poll. A timeout, error, or no
+reply is not approval.
 
 Collect their responses and summarize the useful findings, disagreements, and
 recommended next steps.
@@ -48,13 +49,14 @@ recommended next steps.
 
 Count each full review pass as one round. A fresh review after fixes starts a
 new round. Check each finding yourself and answer it like `sol-loop` step 3:
-smallest fix, or disagree with evidence, or decline as a nit. Send each
-delegate the ledger and the change since its last round.
+smallest fix, or disagree with evidence, or decline as a nit. For later
+rounds, follow `sol-loop` step 4 for each delegate.
 
 If you agree with their recommendations, make the changes and request a fresh
-review after. Continue until all three are satisfied. Use `sol-loop`'s budget
-and stuck rules. When `full-send` or `full-stop` is driving, ask Dhruv with
-that skill's "Asking Dhruv" rules.
+review after. Continue until all three are satisfied. Use `sol-loop`'s round
+budget and stuck rules; stop early when every delegate returns only nits. Its
+one-reviewer rule does not apply. When `full-send` or `full-stop` is driving,
+ask Dhruv with that skill's "Asking Dhruv" rules.
 
 Do not let repeated reviews result in scope creep. It is your job to fight to
 keep scope limited.
