@@ -32,8 +32,9 @@ profile); use the instance that lists it. Start all three in parallel with
 `target.options`, a new `clientRequestId` each round, and keep every `taskId`.
 In Claude Code, T3 tools are deferred: load them with ToolSearch first.
 
-Without T3, use native subagents for the models your harness runs, and
-`sol-loop`'s Codex CLI fallback for Sol, with `-c model_reasoning_effort=high`.
+Without T3, use native subagents for the models your harness runs (keep each
+subagent's ID), and `sol-loop`'s Codex CLI fallback for Sol, with
+`-c model_reasoning_effort=high`.
 
 Give each delegate the request and relevant context; children get no history.
 For review or feedback, keep them read-only: no edits, commits, pushes, PR
@@ -50,7 +51,7 @@ recommended next steps.
 Count each full review pass as one round. A fresh review after fixes starts a
 new round. Check each finding yourself and answer it like `sol-loop` step 3:
 smallest fix, or disagree with evidence, or decline as a nit. For later
-rounds, follow `sol-loop` step 4 for each delegate.
+rounds, follow `sol-loop` step 4 for each delegate, keeping the SCORE line.
 
 If you agree with their recommendations, make the changes and request a fresh
 review after. Continue until all three are satisfied. Use `sol-loop`'s round

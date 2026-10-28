@@ -24,11 +24,12 @@ If the work will be squashed, preserve human author/co-author credit in the
 merge commit too, using verified identities rather than guessed emails. Model
 attribution is not a substitute for contributor credit.
 
-Use `modernize` on the continuation branch, never the original PR's branch,
-to update it against its intended base and current architecture. Rework what
-is necessary to finish the same goal, not unrelated features. Simplify the implementation without dropping intended
-behavior or surfaces. Recheck the source PR too: it may have improved while
-you were working.
+Use `modernize` on the continuation branch to update it against its intended
+base and current architecture. Touch the original PR's branch only for an
+explicitly requested in-place continuation. Rework what is necessary to finish
+the same goal, not unrelated features. Simplify the implementation without
+dropping intended behavior or surfaces. Recheck the source PR too: it may have
+improved while you were working.
 
 Independently verify the original failure and realistic workflows, following
 repository guidance and permissions. Green mocked tests do not prove the user
