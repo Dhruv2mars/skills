@@ -18,6 +18,7 @@ My agent skills for Claude Code and Codex.
 | `thermo-nuclear-code-quality-review` | Sol's checklist for maintainability during `sol-loop`. |
 | `postplan` | Publishes an HTML page to Postplan and returns the link. |
 | `npm-release` | Releases an npm package that ships binaries through GitHub Releases. |
+| `github-mirror` | Puts an Entire repo on its public GitHub mirror, with free Actions CI reported back to Entire trails. |
 
 ## Install
 
@@ -32,7 +33,7 @@ into every Claude config dir you run (`~/.claude`, and any `CLAUDE_CONFIG_DIR`
 profile such as `~/.claude-work`):
 
 ```sh
-for s in full-send full-stop sol-loop council takeover modernize file-pr file-upload babysit-pr leaving-pr-comments postplan; do
+for s in full-send full-stop sol-loop council takeover modernize file-pr file-upload babysit-pr leaving-pr-comments postplan github-mirror; do
   ln -sfn ~/.agents/skills/$s ~/.claude/skills/$s
 done
 ```

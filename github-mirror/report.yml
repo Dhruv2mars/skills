@@ -1,0 +1,84 @@
+name: Report to Entire
+
+# Reports each CI run attempt to the Entire trail as the github-actions check of the Entire plugin
+# dhruv2mars-github-actions (owned by the dhruv2mars project, checks:write); the trail's merge gate requires it.
+# Copied unchanged from the github-mirror skill; per-repo values are Actions variables (ENTIRE_REPO_ID,
+# ENTIRE_PLUGIN_INSTALLATION, optional ENTIRE_API_URL). The key is the repository secret ENTIRE_PLUGIN_KEY. Only this
+# workflow references it, and it checks out nothing and runs only curl, openssl and jq (all on the runner image).
+# workflow_run uses this file as it is on the default branch.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [requested, in_progress, completed]
+
+permissions: {}
+
+jobs:
+  report:
+    # Mirrored pushes only; a run from a fork never reaches the key
+    if: github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report the run
+        shell: bash
+        env:
+          ENTIRE_PLUGIN_KEY: ${{ secrets.ENTIRE_PLUGIN_KEY }}
+          INSTALLATION: ${{ vars.ENTIRE_PLUGIN_INSTALLATION }}
+          REPO: ${{ vars.ENTIRE_REPO_ID }}
+          CELL: ${{ vars.ENTIRE_API_URL || 'https://aws-ap-south-1.api.entire.io' }}
+          ACTION: ${{ github.event.action }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          ATTEMPT: ${{ github.event.workflow_run.id }}/${{ github.event.workflow_run.run_attempt }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          UPDATED_AT: ${{ github.event.workflow_run.updated_at }}
+        run: |
+          set -euo pipefail
+          : "${ENTIRE_PLUGIN_KEY:?set the ENTIRE_PLUGIN_KEY secret}" "${REPO:?set the ENTIRE_REPO_ID variable}" \
+            "${INSTALLATION:?set the ENTIRE_PLUGIN_INSTALLATION variable}"
+          plugin=dhruv2mars-github-actions
+          core=https://in.auth.entire.io
+          b64url() { openssl base64 -A | tr '+/' '-_' | tr -d '='; }
+          # Transient failures (timeouts, 429, 5xx) retry; anything else fails the job
+          post() { curl -fsS --retry 4 --retry-delay 3 --max-time 30 -X POST -H 'Content-Type: application/json' "$@"; }
+          umask 077
+          key=$RUNNER_TEMP/entire-plugin.pem
+          printf '%s\n' "$ENTIRE_PLUGIN_KEY" > "$key"
+
+          # Plugin JWT (EdDSA, iat 30 s back since the core allows no skew), exchanged for a token limited to this
+          # repository and checks:write
+          iat=$(($(date +%s) - 30))
+          header=$(printf '{"alg":"EdDSA","typ":"JWT"}' | b64url)
+          claims=$(jq -cn --arg iss "urn:entire:plugin:$plugin" --arg aud "$core/api/authz/sts" --arg plugin "$plugin" \
+            --arg ins "$INSTALLATION" --argjson iat "$iat" \
+            '{iss: $iss, aud: $aud, plugin_id: $plugin, installation_id: $ins, iat: $iat, exp: ($iat + 300)}' | b64url)
+          # Ed25519 signs in one shot, which OpenSSL 3 does only from a file of known size, not a pipe
+          printf '%s.%s' "$header" "$claims" > "$RUNNER_TEMP/jwt-input"
+          sig=$(openssl pkeyutl -sign -inkey "$key" -rawin -in "$RUNNER_TEMP/jwt-input" | b64url)
+          rm -f "$key" "$RUNNER_TEMP/jwt-input"
+          token=$(post "$core/api/v1/plugins/$plugin/installations/$INSTALLATION/access-tokens" \
+            -H "Authorization: Bearer $header.$claims.$sig" \
+            -d "$(jq -cn --arg repo "$REPO" '{repository_id: $repo, permissions: {checks: "write"}}')" |
+            jq -er '.token | select(type == "string" and length > 0)')
+          echo "::add-mask::$token"
+
+          case "$ACTION:$CONCLUSION" in
+            requested:* | in_progress:*) state='{"status": "in_progress"}'; title="CI is running" ;;
+            *:success) state='{"status": "completed", "conclusion": "success"}'; title="CI passed" ;;
+            *:cancelled) state='{"status": "completed", "conclusion": "cancelled"}'; title="CI was cancelled" ;;
+            *) state='{"status": "completed", "conclusion": "failure"}'; title="CI failed ($CONCLUSION)" ;;
+          esac
+          # One suite and one run per attempt (a rerun is a new attempt), stamped with the run's own update time so a
+          # late "requested" event never overwrites a newer result
+          jq -n --arg branch "$BRANCH" --arg id "$ATTEMPT" --arg at "$UPDATED_AT" --arg url "$RUN_URL" \
+            --arg title "$title" --argjson state "$state" '
+            ($state + if $state.status == "completed" then {completed_at: $at} else {} end) as $s | {
+              branch: $branch,
+              check_suite: ({key: "github-actions", name: "GitHub Actions", external_id: $id, external_updated_at: $at} + $s),
+              check_runs: [{key: "ci", name: "CI", external_id: ($id + "/ci"), external_updated_at: $at, details_url: $url,
+                output: {title: $title, summary: ($title + ": " + $url)}} + $s]
+            }' |
+            post "$CELL/api/v1/repos/$REPO/commits/$SHA/check-runs" -H "Authorization: Bearer $token" -d @- |
+            jq -ec .results
