@@ -1,6 +1,6 @@
 ---
 name: council
-description: Get review or feedback from a council of two models (GPT-6.2 Sol, Opus 5.5) and loop until they agree. Use when the user says "council".
+description: Get review or feedback from a council of two models (GPT-6.2 Sol, Fable 5.2) and loop until they agree. Use when the user says "council".
 ---
 
 # Council
@@ -14,10 +14,10 @@ and explore new ideas, skip fixes to code being replaced.
 
 ## Members
 
-Two delegates, each at high effort:
+Two delegates:
 
-- GPT-6.2 Sol
-- Claude Opus 5.5
+- GPT-6.2 Sol at high effort
+- Claude Fable 5.2 at medium effort
 
 If Dhruv names other members for this request, use those. If a member is
 unavailable, report it instead of substituting.
@@ -25,15 +25,15 @@ unavailable, report it instead of substituting.
 ## Start them
 
 In T3, call `orchestrator_capabilities` and find each model. A model may be
-offered by only one provider instance; use the instance that lists it.
-Start both in parallel with
-`delegate_task` (`role: "review"`, `mode: "async"`), effort high in
+offered by only one provider instance (Fable can sit on a second Claude
+profile); use the instance that lists it. Start both in parallel with
+`delegate_task` (`role: "review"`, `mode: "async"`), each member's effort in
 `target.options`, a new `clientRequestId` each round, and keep every `taskId`.
 In Claude Code, T3 tools are deferred: load them with ToolSearch first.
 
 Without T3, use native subagents for the models your harness runs (keep each
 subagent's ID), and `sol-loop`'s Codex CLI fallback for Sol, with
-`-c model_reasoning_effort=high`.
+`-c model_reasoning_effort=high`. Give each member the effort listed above.
 
 Give each delegate the request and relevant context; children get no history.
 For review or feedback, keep them read-only: no edits, commits, pushes, PR
@@ -80,7 +80,7 @@ Rounds: 2
 | Delegate | Round 1 | Round 2 |
 | --- | --- | --- |
 | GPT-6.2 Sol | 8/10 | 10/10 |
-| Claude Opus 5.5 | 7/10 | 9/10 |
+| Claude Fable 5.2 | 7/10 | 9/10 |
 ```
 
 If a delegate gives no score, write `no score`. Do not invent one. If the PR is
