@@ -46,7 +46,7 @@ After the problem and the fix:
   with a "Before:" one when it helps.
 - Close with how the PR was made: "Created with <model> in <harness> via T3
   Code.", using the real public model name, for example "Claude Opus 5.5 in
-  Claude Code" or "GPT-6.1 Sol in Codex". Drop "via T3 Code" outside T3.
+  Claude Code" or "GPT-6.2 Sol in Codex". Drop "via T3 Code" outside T3.
   Use this line instead of any default
   attribution line. If you ran the `sol-loop` skill, put "Reviewed with
   sol-loop: N rounds with <model>. Sol verdict: approved" just above it.

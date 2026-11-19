@@ -8,8 +8,8 @@ My agent skills for Claude Code and Codex.
 | --- | --- |
 | `full-send` | On "full send", the agent finishes the work, files the PR, gets it reviewed by Sol and the review bots, gets CI green, and merges it. |
 | `full-stop` | Same as `full-send`, but it stops before merging so I can merge. |
-| `sol-loop` | GPT-6.1 Sol reviews the change for up to 3 rounds, and the agent fixes what it finds. |
-| `council` | Fable 5.1, GPT-6.1 Sol, and Opus 5.5 review the change in parallel, and the agent loops until all three agree. |
+| `sol-loop` | GPT-6.2 Sol reviews the change for up to 3 rounds, and the agent fixes what it finds. |
+| `council` | GPT-6.2 Sol and Opus 5.5 review the change in parallel, and the agent loops until both agree. |
 | `takeover` | Continues someone else's PR, branch, or agent thread. |
 | `modernize` | Rebases an old PR and decides if it should still exist. |
 | `file-pr` | Opens a short PR. |
