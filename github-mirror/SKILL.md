@@ -89,7 +89,7 @@ Keep a TASKS.md checklist in the repo while doing this. Work in a fresh clone if
      --homepage https://entire.com/et/dhruv2mars/<name> --description "<one line>. Mirror of Entire (entire.com/et/dhruv2mars/<name>); develop there."
    gh api -X PATCH repos/$R -F has_pull_requests=false
    gh api -X PATCH repos/$R --input - <<<'{"security_and_analysis":{"secret_scanning":{"status":"enabled"},"secret_scanning_push_protection":{"status":"enabled"}}}'
-   gh api -X DELETE repos/$R/automated-security-fixes      # Dependabot security PRs off
+   gh api -X DELETE repos/$R/automated-security-fixes      # Dependabot security PRs off; a 422 means alerts are off, so they already are
    gh api -X PUT repos/$R/actions/permissions/fork-pr-contributor-approval -f approval_policy=all_external_contributors
    gh api -X PUT repos/$R/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false
    gh secret set ENTIRE_PLUGIN_KEY -R $R < ~/.entire-ci/entire-plugin-key.pem

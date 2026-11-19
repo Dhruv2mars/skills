@@ -2,6 +2,8 @@
 
 My agent skills for Claude Code and Codex.
 
+<sub>Developed on <a href="https://entire.com/et/dhruv2mars/skills">Entire</a>. The GitHub copy is a read-only mirror for CI; open issues and changes on Entire.</sub>
+
 | Skill | What it does |
 | --- | --- |
 | `full-send` | On "full send", the agent finishes the work, files the PR, gets it reviewed by Sol and the review bots, gets CI green, and merges it. |
