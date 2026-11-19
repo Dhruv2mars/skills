@@ -1,0 +1,41 @@
+name: CI
+
+# GitHub is a one-way mirror of the Entire repo (git mirror); this runs on every mirrored push. report.yml reports
+# each run to the Entire trail, whose merge gate requires it.
+on:
+  push:
+    branches-ignore: ['archive/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Every skill has frontmatter naming its folder and a description
+        shell: bash
+        run: |
+          set -euo pipefail
+          fail=0
+          for f in */SKILL.md; do
+            dir=${f%/SKILL.md}
+            head -1 "$f" | grep -qx -- '---' || { echo "::error file=$f::must start with --- frontmatter"; fail=1; continue; }
+            fm=$(awk 'NR == 1 { next } /^---$/ { exit } { print }' "$f")
+            grep -qx "name: $dir" <<<"$fm" || { echo "::error file=$f::frontmatter needs 'name: $dir'"; fail=1; }
+            grep -q '^description: .\{20,\}' <<<"$fm" || { echo "::error file=$f::frontmatter needs a description"; fail=1; }
+          done
+          exit $fail
+      - name: The mirror's reporter matches the github-mirror template
+        run: cmp .github/workflows/report.yml github-mirror/report.yml
+      - name: Workflows and the template lint clean
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color .github/workflows/ci.yml .github/workflows/report.yml github-mirror/report.yml
