@@ -52,6 +52,12 @@ After the problem and the fix:
   sol-loop: N rounds with <model>. Sol verdict: approved" just above it.
   Keep the closing line last whenever you edit the description.
 
+Before you submit, check the title, description, quotes, and attachments for
+secrets and private details.
+
 Write the real description before you open the PR. Never open one with a
 placeholder body. Open a real PR rather than a draft so review bots run. If
-the user also asked to babysit it, continue with the `babysit-pr` skill.
+`gh pr create` fails because the GraphQL rate limit is used up, open it
+through REST: `gh api repos/<owner>/<repo>/pulls -f title=... -f head=...
+-f base=... -F body=@<file>`. If the user also asked to babysit it, continue
+with the `babysit-pr` skill.

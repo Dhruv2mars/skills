@@ -1,6 +1,6 @@
 ---
 name: full-stop
-description: Take work to a verified, reviewed PR that Dhruv can merge, then stop without merging. Use whenever a message says "full stop" as a request, typed by Dhruv or written in a brief by another agent, not when Dhruv asks you to stop working.
+description: Take work to a verified, reviewed PR that Dhruv can merge, then stop without merging. Use whenever a message says "full stop" as a request, typed by Dhruv or written in a brief by another agent, even as a closing "Full stop." that reads like emphasis, but not when Dhruv asks you to stop working.
 ---
 
 # Full Stop
@@ -24,6 +24,9 @@ Never merge, enable auto-merge, enter a merge queue, push to the default
 branch, force-push any other branch, bypass branch protection, or delegate any
 of those actions. Disable existing auto-merge and remove the PR from any merge
 queue before you hand off.
+
+A "full stop" request also carries full-send's testing permission: read
+"Testing permission" in [full-send](../full-send/SKILL.md) and apply it here.
 
 ## Steps
 

@@ -25,6 +25,21 @@ unrelated work and stay within scope.
 Never push to the default branch, force-push any other branch, or bypass
 branch protection.
 
+### Testing permission
+
+A "full send" request is permission to use the test methods that "Proof"
+needs, without asking first. If a project file or other instruction says to
+ask before a test method, or to leave testing to the user, this request
+replaces that rule for this task. That includes ask-first rules for computer
+use, browser automation, simulators and devices, running the app or a dev
+server, screenshots, and visual checks. List the method you used in the
+report.
+
+Rules about how to test still apply: the right command, fixture, browser, or
+computer-use model. This permission only removes the ask-first step. It covers
+only the tests this task needs, does not extend to the steps under "Asking
+Dhruv", and does not bypass a harness or system approval prompt.
+
 ## Steps
 
 1. **Finish the change.** Complete the goal from the request with the smallest

@@ -22,6 +22,13 @@ subagent cannot, because its parent owns the PR) or the harness has no
 watcher, poll the PR yourself within the turn: `gh pr checks <n> --watch`,
 then read new comments.
 
+"Stopped watching, could not read it" usually means the GitHub GraphQL rate
+limit is used up. Check `gh api rate_limit --jq .resources.graphql`; if
+`remaining` is near 0, wait for `reset` with one background command before you
+watch again, never in a tight loop. The REST limit is separate: read the PR
+with `gh api repos/<owner>/<repo>/pulls/<n>` and checks with
+`gh api repos/<owner>/<repo>/commits/<sha>/check-runs` meanwhile.
+
 The watcher only wakes you for those events. It will not wake you for
 anything else: an optional check or bot that passes without commenting, a
 rerun you can only start once a run finishes, a deploy after merge, a run that
@@ -38,7 +45,16 @@ failures, distinguish repository failures from infrastructure flakes, and reply
 with a written reason when dismissing false positives. Rerun a failure you
 believe is a flake. It is a flake only if it does not happen again.
 
-Keep an eye on changes to `main` and rebase when needed. If an overlapping PR
+If the repo has `.macroscope/check-run-agents/*.md`, read those rules before
+you reply to a Macroscope finding; its findings cite them. CodeRabbit is
+advisory: verify its findings like any other, but never wait for it or hold a
+merge for it.
+
+Keep an eye on changes to `main` and rebase when needed. `watch_pull_request`
+reports conflicts only, so check for BEHIND yourself before you call the PR
+ready. Right before a merge, `git fetch` and check the PR again: never merge
+when it is BEHIND or DIRTY, or when base commits that landed after the last
+green run touch this PR's files. If an overlapping PR
 makes this one obsolete, stop monitoring, report it to the user, and ask before
 closing the PR unless closure was explicitly authorized.
 
@@ -49,7 +65,11 @@ resolve the comment. Format every comment left on Dhruv's behalf with the
 Screenshots and videos help as well. Use the `file-upload` skill when needed.
 
 Do not let review feedback expand the PR beyond the user's original goal.
-Address real shortcomings, but avoid scope creep.
+Review loops grow a PR one cheap-looking fix at a time. Fix real bugs in the
+intended case; decline the rest with a written reason and list them as
+follow-ups: unneeded tests, guards for edge cases that do not matter, extra
+compatibility, small performance costs. Prefer the fix that deletes or narrows
+code.
 
 If nothing has changed, stay quiet rather than posting filler comments. Stop
 when the review bots and required checks are green on the latest commit. A bot

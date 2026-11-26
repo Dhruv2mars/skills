@@ -47,5 +47,5 @@ Run `git pull` to update every linked skill.
 
 ## Credit
 
-- `full-send`, `full-stop`, `sol-loop`, `takeover`, `file-pr`, `babysit-pr`, and `leaving-pr-comments` are rebuilt from skills Theo Browne ([@t3dotgg](https://github.com/t3dotgg)) showed on stream. `council` and `modernize` come from his [tstack](https://github.com/t3dotgg/tstack). `file-upload` started from his idea and was redesigned.
+- `full-send`, `full-stop`, `sol-loop`, `takeover`, `file-pr`, `babysit-pr`, and `leaving-pr-comments` are rebuilt from skills Theo Browne ([@t3dotgg](https://github.com/t3dotgg)) showed on stream. `council` and `modernize` come from his [tstack](https://github.com/t3dotgg/tstack). Synced with tstack through [`11e37a7`](https://github.com/t3dotgg/tstack/commit/11e37a7) (2026-11-11); diff `skills/` from there to catch up. `file-upload` started from his idea and was redesigned.
 - The thermo-nuclear pair comes from Cursor's [cursor/plugins](https://github.com/cursor/plugins/tree/main/thermos/skills).
