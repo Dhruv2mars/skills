@@ -8,8 +8,8 @@ description: Monitor a pull request through review and CI. Use when the user ask
 
 > On a repo whose `origin` is `entire://...` there is no GitHub: a PR is an Entire Trail. Use the Trail mapping in the global "Entire" instructions in place of every `gh` and PR step below.
 
-All the repos we work in have various AI review bots. They're helpful, even if
-they are not always right.
+Some repos have AI review bots; most of ours, and every Entire trail, have
+none. When a repo has them, they're helpful, even if not always right.
 
 If your harness offers tools to monitor a PR, use them so you can respond when
 comments arrive. First handle the comments and checks already on the PR, since
@@ -44,11 +44,6 @@ finding against the source before changing code. Fix real findings and CI
 failures, distinguish repository failures from infrastructure flakes, and reply
 with a written reason when dismissing false positives. Rerun a failure you
 believe is a flake. It is a flake only if it does not happen again.
-
-If the repo has `.macroscope/check-run-agents/*.md`, read those rules before
-you reply to a Macroscope finding; its findings cite them. CodeRabbit is
-advisory: verify its findings like any other, but never wait for it, count
-it in a stop condition or ready check, or hold a merge for it.
 
 Keep an eye on changes to `main` and rebase when needed. `watch_pull_request`
 reports conflicts only, so check for BEHIND yourself before you call the PR
