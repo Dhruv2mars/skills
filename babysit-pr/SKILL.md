@@ -24,9 +24,9 @@ then read new comments.
 
 "Stopped watching, could not read it" usually means the GitHub GraphQL rate
 limit is used up. Check `gh api rate_limit --jq .resources.graphql`; if
-`remaining` is near 0, wait for `reset` with one background command before you
-watch again, never in a tight loop. The REST limit is separate: read the PR
-with `gh api repos/<owner>/<repo>/pulls/<n>` and checks with
+`remaining` is near 0, do not watch again before `reset`, and never retry in
+a tight loop. The REST limit is separate: read the PR with
+`gh api repos/<owner>/<repo>/pulls/<n>` and checks with
 `gh api repos/<owner>/<repo>/commits/<sha>/check-runs` meanwhile.
 
 The watcher only wakes you for those events. It will not wake you for
@@ -47,8 +47,8 @@ believe is a flake. It is a flake only if it does not happen again.
 
 If the repo has `.macroscope/check-run-agents/*.md`, read those rules before
 you reply to a Macroscope finding; its findings cite them. CodeRabbit is
-advisory: verify its findings like any other, but never wait for it or hold a
-merge for it.
+advisory: verify its findings like any other, but never wait for it, count
+it in a stop condition or ready check, or hold a merge for it.
 
 Keep an eye on changes to `main` and rebase when needed. `watch_pull_request`
 reports conflicts only, so check for BEHIND yourself before you call the PR

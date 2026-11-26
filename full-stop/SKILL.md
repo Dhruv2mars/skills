@@ -12,7 +12,8 @@ Keep fixing, verifying, and reviewing. Never merge it. Your updates and your
 final message go unread until long after you stop.
 
 If Dhruv did not explicitly request "full stop" in some clear way, do not
-assume full autonomy. If he did, everything below applies.
+assume full autonomy. A closing "Full stop." on a work request counts as a
+clear request. If he did, everything below applies.
 
 ## Authority
 

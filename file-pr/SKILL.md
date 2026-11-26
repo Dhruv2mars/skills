@@ -59,5 +59,6 @@ Write the real description before you open the PR. Never open one with a
 placeholder body. Open a real PR rather than a draft so review bots run. If
 `gh pr create` fails because the GraphQL rate limit is used up, open it
 through REST: `gh api repos/<owner>/<repo>/pulls -f title=... -f head=...
--f base=... -F body=@<file>`. If the user also asked to babysit it, continue
+-f base=... -F body=@<file>`. REST does not upload `--attach` media, so for a
+body with attachments wait for the rate limit to reset instead. If the user also asked to babysit it, continue
 with the `babysit-pr` skill.
